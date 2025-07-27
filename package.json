@@ -5,8 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev":"nodeomon src/index.js"
-   
+    "dev": "nodeomon src/index.js"
   },
   "keywords": [
     "javascript",
@@ -15,6 +14,7 @@
   "author": "mohammad zaid",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
   }
 }
