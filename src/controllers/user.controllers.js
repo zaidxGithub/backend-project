@@ -7,6 +7,7 @@ import {User} from "../models/user.model.js"
 // to uplaod the files in cloudinary 
 import{uploadOnCLoudinary} from "../utils/cloudinary.js"
 import { JWT } from "jsonwebtoken";
+import { syncIndexes } from "mongoose";
 
 const generateRefreshAndAccessToken= async(userId)=>{
     try {
@@ -242,9 +243,64 @@ const refreshAccessToken=asyncHandler(async (req,res)=>{
 }
 )
 
+const changeCurrentPassword=asyncHandler(async(req,res)=>{
+    const {oldPassword,newPassword}=req.body
+   const user =User.findById(req.user?._id);
+const isPasswordCorrect=await user.isPasswordCorrect(oldPassword);
+if(!isPasswordCorrect){
+    throw new apiError(400,"Invalid Old Password")
+}
+
+user.password=newPassword
+await user.save({validateBeforeSave:false})
+return res.status(200)
+.json(
+    new ApiResponse( 200,"PassWord changed successfully")
+)
+
+})
+
+const getCurrentUser=asyncHandler(async (req,res)=>{
+    res.status(200).
+    json(200,req.user,"currentUser Fetched Successfully")
+})
+const updateUserAvatar=asyncHandler(async (req,res)=>{
+    // user ko find karo
+    // puraana deleete kro database se
+    // new wala set kardo
+    const avatarLocalpath=req.file?.path
+    if(!avatarLocalpath ){
+        throw new apiError(400,"Avatar fIle is missing")
+    }
+    const avatar=await uploadOnCLoudinary(avatarLocalpath)
+    if(!avatar.url){
+        throw new apiError(400,"error while uploading the avatar : usercontroller.js/UpdateUserAvart")
+    }
+
+   const UpdateResponse = await User.findByIdAndUpdate(
+        req.user?._id,{
+            $set:{
+                avatar:avatar.url
+            }
+
+        },{
+            new:true
+        }).select("-password")
+
+        return res.status(200).
+        json(
+        new ApiResponse(200,UpdateResponse,"User Image Updated Successfully") )
 
 
-export {registerUser,loginUser,logoutUser,refreshAccessToken};
+})
+
+export {registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateUserAvatar};
 
 
 
